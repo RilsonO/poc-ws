@@ -10,7 +10,7 @@ const useEcho = () => {
   useEffect(() => {
     //  Setup Pusher client
     // const PusherClient = new Pusher('o3j4m5x97f00s1clgnce', {
-    //   wsHost: 'http://192.168.1.8',
+    //   wsHost: 'http://localhost',
     //   wsPort: 80,
     //   wssPort: 80,
     //   forceTLS: 'http',
@@ -46,17 +46,17 @@ const useEcho = () => {
 
     const echo = new Echo({
       broadcaster: 'reverb',
-      key: 'o3j4m5x97f00s1clgnce',
-      wsHost: 'http://192.168.1.8',
+      key: "o3j4m5x97f00s1clgnce",
+      wsHost: "localhost",
       wsPort: 80,
       wssPort: 80,
-      forceTLS: 'http',
+      forceTLS: false,
       enabledTransports: ['ws', 'wss'],
       authorizer: (channel, options) => {
         return {
           authorize: (socketId, callback) => {
             axios
-              .post('/broadcasting/auth', {
+              .post('http://localhost/broadcasting/auth', {
                 socket_id: socketId,
                 channel_name: channel.name,
               })
@@ -81,12 +81,6 @@ const useEcho = () => {
       console.error('Error connecting to Echo server:', error);
     });
 
-    console.log('Subscribing to channel...');
-    echo
-      .private('channel_for_everyone')
-      .listen('CommentCreatedEvent', (event: any) => {
-        console.log('Event received:', event);
-      });
     setEchoInstance(echo);
 
     // Cleanup on unmount

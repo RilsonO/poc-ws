@@ -63,19 +63,15 @@ const ChatInterface = ({ user }) => {
 
   function subscribeToChatChannel() {
     if (echo) {
-      console.log('[subscribeToChatChannel]');
+      console.log('[subscribeToChatChannel]', user, `chat.${user?.id}`);
       echo.private(`chat.${user?.id}`).listen('MessageSent', (e) => {
-        console.log('real-time-event', {
-          id: e.message?.id,
-          message: e.message?.message,
-          from: e.message?.from,
-        });
+        console.log('real-time-event', e);
         setMessages((prevMessages) => [
           ...prevMessages,
           {
             id: e.message?.id,
-            message: e.message?.message,
-            from: e.message?.from,
+            message: e.message?.text,
+            from: e.message?.sender_id,
           },
         ]);
       });
