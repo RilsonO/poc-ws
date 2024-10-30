@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import 'react-native-url-polyfill/auto';
 
 import Login from './src/screens/Login';
 

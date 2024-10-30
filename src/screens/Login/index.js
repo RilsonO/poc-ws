@@ -6,9 +6,9 @@ import {
   FlatList,
   SafeAreaView,
 } from 'react-native';
-// import { client } from '../../hooks/meilisearch';
+import { client } from '../../hooks/meilisearch';
 
-// const index = client.index('cities');
+const index = client.index('cities');
 
 import { style as tw } from 'twrnc';
 
@@ -71,16 +71,16 @@ export default function Login() {
               value={search}
               onChangeText={async (txt) => {
                 setSearch(txt);
-                // const found = await index.search(txt);
-                // console.log('Found =>', found);
+                const found = await index.search(txt);
+                console.log('Found =>', found);
 
-                // setMatched([...found]);
+                setMatched([...found.hits]);
               }}
             />
           }
           data={[]}
           keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => <Text>{item.title}</Text>}
+          renderItem={({ item }) => <Text>{item.name}</Text>}
         />
       </View>
     </SafeAreaView>
