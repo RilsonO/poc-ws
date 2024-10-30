@@ -8,46 +8,12 @@ const useEcho = () => {
   const [echoInstance, setEchoInstance] = useState(null);
 
   useEffect(() => {
-    //  Setup Pusher client
-    // const PusherClient = new Pusher('o3j4m5x97f00s1clgnce', {
-    //   wsHost: 'http://localhost',
-    //   wsPort: 80,
-    //   wssPort: 80,
-    //   forceTLS: 'http',
-    //   enabledTransports: ['ws', 'wss'],
-    //   disableStats: true,
-    //   cluster: 'mt1',
-    //   authorizer: (channel, options) => {
-    //     return {
-    //       authorize: (socketId, callback) => {
-    //         axios
-    //           .post('/broadcasting/auth', {
-    //             socket_id: socketId,
-    //             channel_name: channel.name,
-    //           })
-    //           .then((response) => {
-    //             callback(false, response.data);
-    //           })
-    //           .catch((error) => {
-    //             callback(true, error);
-    //           });
-    //       },
-    //     };
-    //   },
-    // });
-
-    // // Create Echo instance
-    // const echo = new Echo({
-    //   broadcaster: 'reverb',
-    //   client: PusherClient,
-    // });
-
     console.log('Initialising Echo...');
 
     const echo = new Echo({
       broadcaster: 'reverb',
-      key: "o3j4m5x97f00s1clgnce",
-      wsHost: "localhost",
+      key: 'o3j4m5x97f00s1clgnce',
+      wsHost: '192.168.1.7',
       wsPort: 80,
       wssPort: 80,
       forceTLS: false,
@@ -56,7 +22,7 @@ const useEcho = () => {
         return {
           authorize: (socketId, callback) => {
             axios
-              .post('http://localhost/broadcasting/auth', {
+              .post('http://192.168.1.7/api/broadcasting/auth', {
                 socket_id: socketId,
                 channel_name: channel.name,
               })

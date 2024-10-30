@@ -13,11 +13,14 @@ import {
 import { style as tw } from 'twrnc';
 import useEcho from '../hooks/echo';
 import { api } from '../services/api';
+import { Auth } from '../services/auth';
 
 const ChatInterface = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [userData, setUserData] = useState(user);
+  const [isFriendTyping, setIsFriendTyping] = useState(false);
+  const [isFriendTypingTimer, setIsFriendTypingTimer] = useState(null);
 
   const echo = useEcho();
 
@@ -26,13 +29,13 @@ const ChatInterface = ({ user }) => {
       setInputText('');
       const options = {
         method: 'POST',
-        url: `/api/messages/${userData.id === 1 ? 2 : 1}`,
+        url: `/api/messages/${userData.id === 19 ? 20 : 19}`,
         data: {
           /**I logged in with user 1 and 7.
            * then you configure this to be dynamic
            * (giving the user the power to choose who they want to chat with)
            * */
-          user_id: userData.id === 1 ? 2 : 1, // receiver
+          user_id: userData.id === 19 ? 20 : 19, // receiver
           from: userData.id,
           message: inputText,
         },
@@ -61,20 +64,62 @@ const ChatInterface = ({ user }) => {
     }
   };
 
+  const sendTypingEvent = () => {
+    echo.private(`chat.${userData.id === 19 ? 20 : 19}`).whisper('typing', {
+      userID: user.id,
+    });
+  };
+
   function subscribeToChatChannel() {
     if (echo) {
-      console.log('[subscribeToChatChannel]', user, `chat.${user?.id}`);
-      echo.private(`chat.${user?.id}`).listen('MessageSent', (e) => {
-        console.log('real-time-event', e);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: e.message?.id,
-            message: e.message?.text,
-            from: e.message?.sender_id,
-          },
-        ]);
-      });
+      echo
+        .private(`chat.${user?.id}`)
+        .listen('MessageSent', (e) => {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: e.message?.id,
+              message: e.message?.text,
+              from: e.message?.sender_id,
+            },
+          ]);
+        })
+        .listenForWhisper('typing', (response) => {
+          console.log('[listenForWhisper] typing response => ', response);
+          const friendId = userData.id === 19 ? 20 : 19;
+          setIsFriendTyping(response.userID === friendId);
+
+          if (isFriendTypingTimer) {
+            clearTimeout(isFriendTypingTimer);
+          }
+
+          const timer = setTimeout(() => {
+            setIsFriendTyping(false);
+          }, 1000);
+
+          setIsFriendTypingTimer(timer);
+        });
+    }
+  }
+
+  async function getMessages() {
+    try {
+      const teste = user.id === 19 ? 20 : 19;
+
+      const response = await Auth.messages(teste);
+
+      if (response.status == 200) {
+        const data = response.data.map((message) => {
+          return {
+            id: message.id,
+            message: message.text,
+            from: message.sender.id,
+          };
+        });
+        setMessages((prev) => [...prev, ...data]);
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   }
 
@@ -86,9 +131,16 @@ const ChatInterface = ({ user }) => {
     return () => {
       if (echo && user) {
         echo.leaveChannel(`chat.${user?.id}`);
+        clearTimeout(isFriendTypingTimer);
       }
     };
   }, [echo, user]);
+
+  useEffect(() => {
+    if (userData) {
+      getMessages();
+    }
+  }, []);
 
   const renderItem = ({ item }) => (
     <View
@@ -113,7 +165,9 @@ const ChatInterface = ({ user }) => {
       <FlatList
         data={messages}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) =>
+          String(item.id + index + new Date().getTime())
+        }
         contentContainerStyle={tw`p-4`}
       />
       <KeyboardAvoidingView
@@ -128,7 +182,10 @@ const ChatInterface = ({ user }) => {
           <TextInput
             style={tw`flex-1 bg-gray-800 text-white p-6 rounded-lg`}
             value={inputText}
-            onChangeText={setInputText}
+            onChangeText={(txt) => {
+              sendTypingEvent();
+              setInputText(txt);
+            }}
             placeholder='Type a message...'
             placeholderTextColor='gray'
           />
@@ -139,6 +196,9 @@ const ChatInterface = ({ user }) => {
             <Text style={tw`text-white`}>Send</Text>
           </TouchableOpacity>
         </View>
+        {isFriendTyping && (
+          <Text style={tw`text-white ml-6 my-2`}>friend is typing...</Text>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

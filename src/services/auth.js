@@ -20,4 +20,19 @@ export const Auth = {
       throw error;
     }
   },
+
+  async messages(friendId) {
+    const options = {
+      method: 'GET',
+      url: `/api/messages/${friendId}`,
+    };
+
+    try {
+      const response = await api.request(options);
+      return response;
+    } catch (error) {
+      console.log('[Axios error] error:', error);
+      throw error;
+    }
+  },
 };
